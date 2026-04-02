@@ -9,11 +9,30 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
 
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icono_cocamita.png"
+
 flutter:
   uses-material-design: true
+  fonts:
+    - family: PoppinsFonts
+      fonts:
+        - asset: assets/fonts/poppins_300light.ttf
+          weight: 300
+        - asset: assets/fonts/poppins_400regular.ttf
+          weight: 400
+        - asset: assets/fonts/poppins_500medium.ttf
+          weight: 500
+        - asset: assets/fonts/poppins_600semibold.ttf
+          weight: 600
+        - asset: assets/fonts/poppins_700bold.ttf
+          weight: 700
