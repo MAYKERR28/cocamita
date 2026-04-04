@@ -17,10 +17,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CocaMita',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
+      theme: ThemeData(        
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Poppins', // Te sugiero usar una fuente como Poppins o Montserrat en el futuro
+        fontFamily: "PoppinsFonts", // Te sugiero usar una fuente como Poppins o Montserrat en el futuro
       ),
       home: const PantallaBienvenida(),
     );

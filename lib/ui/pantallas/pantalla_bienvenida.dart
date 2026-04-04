@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cocamita/ui/widgets/boton_menu.dart';
+// Nuevas importaciones:
+import 'package:cocamita/ui/pantallas/pantalla_listas.dart';
+import 'package:cocamita/ui/pantallas/pantalla_ventas.dart';
 
 class PantallaBienvenida extends StatelessWidget {
   const PantallaBienvenida({super.key});
@@ -69,7 +72,11 @@ class PantallaBienvenida extends StatelessWidget {
                     icono: Icons.edit_note, // Ícono similar al del mockup
                     color: verdeCoca,
                     onPressed: () {
-                      // TODO: Navegar a Listas
+                     // Navegar a Listas
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PantallaListas()),
+                      );
                     },
                   ),
                   const SizedBox(height: 20),
@@ -78,7 +85,11 @@ class PantallaBienvenida extends StatelessWidget {
                     icono: Icons.shopping_cart,
                     color: rojoVino,
                     onPressed: () {
-                      // TODO: Navegar a Ventas
+                      /// Navegar a Ventas
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PantallaVentas()),
+                      );
                     },
                   ),
 
