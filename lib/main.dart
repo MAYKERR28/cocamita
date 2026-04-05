@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cocamita/ui/pantallas/pantalla_bienvenida.dart';
+import 'package:cocamita/ui/screens/pantalla_bienvenida.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +17,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CocaMita',
       debugShowCheckedModeBanner: false,
+      
       theme: ThemeData(        
         useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-        fontFamily: "PoppinsFonts", // Te sugiero usar una fuente como Poppins o Montserrat en el futuro
+        
+        fontFamily: "PoppinsFonts", 
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green)// Te sugiero usar una fuente como Poppins o Montserrat en el futuro
       ),
       home: const PantallaBienvenida(),
+      
     );
   }
 }
