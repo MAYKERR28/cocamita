@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Modelo de datos para un cosechador en la tabla.
 class CosechadorItem {
   TextEditingController nombreCtrl;
   TextEditingController p1Ctrl;
@@ -21,13 +20,11 @@ class CosechadorItem {
         g1 = false,
         g2 = false;
 
-  /// Calcula la suma total de los pesos P1 a P4.
   int get sTot {
     int val(TextEditingController c) => int.tryParse(c.text) ?? 0;
     return val(p1Ctrl) + val(p2Ctrl) + val(p3Ctrl) + val(p4Ctrl);
   }
 
-  /// Libera los controladores para evitar fugas de memoria.
   void dispose() {
     nombreCtrl.dispose();
     p1Ctrl.dispose();
@@ -36,7 +33,6 @@ class CosechadorItem {
     p4Ctrl.dispose();
   }
 
-  // Serialización para persistencia con shared_preferences
   Map<String, dynamic> toJson() => {
         'nombre': nombreCtrl.text,
         'p1': p1Ctrl.text,

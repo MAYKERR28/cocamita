@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../services/servicio_imagenes.dart';
+import '../../services/servicio_pdf.dart';
 
 class PantallaGuardados extends StatefulWidget {
   const PantallaGuardados({super.key});
@@ -12,109 +12,28 @@ class PantallaGuardados extends StatefulWidget {
 
 class _PantallaGuardadosState extends State<PantallaGuardados> {
   final Color verdeCoca = const Color(0xFF00796B);
-  List<String> _rutasImagenes = [];
+  final Color rojoVino = const Color(0xFF7A1C1C);
+  List<String> _rutasPdfs = [];
 
   @override
   void initState() {
     super.initState();
-    _cargarImagenes();
+    _cargarPdfs();
   }
 
-  Future<void> _cargarImagenes() async {
-    final rutas = await ServicioImagenes.obtenerRutas();
+  Future<void> _cargarPdfs() async {
+    final rutas = await ServicioPdf.obtenerRutas();
     setState(() {
-      _rutasImagenes = rutas.reversed.toList(); // Mostrar las más recientes primero
+      _rutasPdfs = rutas.reversed.toList();
     });
   }
 
-  void _abrirVisor(int indexInicial) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => _VisorImagenesCompleto(
-          rutas: _rutasImagenes,
-          indexInicial: indexInicial,
-          alEliminar: _cargarImagenes, // Refresca la galería al volver
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Guardados', style: TextStyle(color: Colors.white)),
-        backgroundColor: verdeCoca,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: _rutasImagenes.isEmpty
-          ? const Center(child: Text('No hay listas guardadas aún.'))
-          : GridView.builder(
-              padding: const EdgeInsets.all(10),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // 2 columnas
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.7, // Proporción de la miniatura (más alta que ancha)
-              ),
-              itemCount: _rutasImagenes.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => _abrirVisor(index),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.file(
-                      File(_rutasImagenes[index]),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                );
-              },
-            ),
-    );
-  }
-}
-
-// --- VISOR DE IMÁGENES A PANTALLA COMPLETA ---
-class _VisorImagenesCompleto extends StatefulWidget {
-  final List<String> rutas;
-  final int indexInicial;
-  final VoidCallback alEliminar;
-
-  const _VisorImagenesCompleto({
-    required this.rutas,
-    required this.indexInicial,
-    required this.alEliminar,
-  });
-
-  @override
-  State<_VisorImagenesCompleto> createState() => _VisorImagenesCompletoState();
-}
-
-class _VisorImagenesCompletoState extends State<_VisorImagenesCompleto> {
-  late PageController _pageController;
-  late int _indexActual;
-  final Color rojoVino = const Color(0xFF7A1C1C);
-
-  @override
-  void initState() {
-    super.initState();
-    _indexActual = widget.indexInicial;
-    _pageController = PageController(initialPage: widget.indexInicial);
-  }
-
-  Future<void> _compartirImagen() async {
-    final ruta = widget.rutas[_indexActual];
-    await Share.shareXFiles([XFile(ruta)], text: 'Comparto mi lista de CocaMita');
-  }
-
-  Future<void> _confirmarEliminar() async {
+  Future<void> _eliminar(String ruta) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar lista'),
-        content: const Text('¿Estás seguro de que deseas eliminar esta lista guardada?'),
+        title: const Text('Eliminar Documento'),
+        content: const Text('¿Estás seguro de eliminar este apunte?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
           ElevatedButton(
@@ -127,37 +46,53 @@ class _VisorImagenesCompletoState extends State<_VisorImagenesCompleto> {
     );
 
     if (confirmar == true) {
-      await ServicioImagenes.eliminarImagen(widget.rutas[_indexActual]);
-      widget.alEliminar(); // Actualiza la pantalla anterior
-      if (mounted) Navigator.pop(context); // Cierra el visor
+      await ServicioPdf.eliminarPdf(ruta);
+      _cargarPdfs();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        title: const Text('Apuntes Guardados', style: TextStyle(color: Colors.white)),
+        backgroundColor: verdeCoca,
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(icon: const Icon(Icons.share), onPressed: _compartirImagen),
-          IconButton(icon: const Icon(Icons.delete, color: Colors.redAccent), onPressed: _confirmarEliminar),
-        ],
       ),
-      body: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) => setState(() => _indexActual = index),
-        itemCount: widget.rutas.length,
-        itemBuilder: (context, index) {
-          // InteractiveViewer permite hacer zoom (pellizcar)
-          return InteractiveViewer(
-            child: Center(
-              child: Image.file(File(widget.rutas[index]), fit: BoxFit.contain),
+      body: _rutasPdfs.isEmpty
+          ? const Center(child: Text('No hay documentos guardados aún.'))
+          : ListView.builder(
+              padding: const EdgeInsets.all(10),
+              itemCount: _rutasPdfs.length,
+              itemBuilder: (context, index) {
+                final ruta = _rutasPdfs[index];
+                final nombreArchivo = ruta.split('/').last;
+
+                return Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    leading: const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 40),
+                    title: Text(nombreArchivo.replaceAll('_', ' ').replaceAll('.pdf', ''), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    subtitle: const Text('Tocar para abrir'),
+                    onTap: () => OpenFilex.open(ruta),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.share, color: Colors.blue),
+                          onPressed: () => Share.shareXFiles([XFile(ruta)], text: 'Te comparto el apunte de CocaMita'),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.grey),
+                          onPressed: () => _eliminar(ruta),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
