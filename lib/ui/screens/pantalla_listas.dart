@@ -41,7 +41,6 @@ class _PantallaListasState extends State<PantallaListas> {
     });
   }
 
-  // --- LÓGICA DE DATOS ---
   Future<void> _cargarDatos() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -80,17 +79,14 @@ class _PantallaListasState extends State<PantallaListas> {
         _pesoNuevoCtrl.clear();
       });
       _guardarDatos();
-      // --- NUEVA FUNCIONALIDAD: Ocultar teclado y Notificación ---
-      FocusScope.of(context).unfocus(); 
-      
+      FocusScope.of(context).unfocus();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Anotado correctamente'),
           backgroundColor: verdeCoca,
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 1),
         ),
       );
-
     }
   }
 
@@ -104,52 +100,26 @@ class _PantallaListasState extends State<PantallaListas> {
     _guardarDatos();
   }
 
-  // --- CÁLCULOS ---
   int _calcularTotalG1() =>
       _lista.where((e) => e.g1).fold(0, (sum, item) => sum + item.sTot);
   int _calcularTotalG2() =>
       _lista.where((e) => e.g2).fold(0, (sum, item) => sum + item.sTot);
 
-  // --- DISEÑO DE INPUTS ---
-  InputDecoration _outlineInput(String label, IconData icono, Color color) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icono, color: color),
-      labelStyle: TextStyle(color: color),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: color.withOpacity(0.4)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: color, width: 2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      contentPadding: const EdgeInsets.all(8),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Calculamos el gran total absoluto sumando todo lo que hay en la tabla
-    int granTotalCalculado = _lista.fold(0, (sum, item) => sum + item.sTot);
     int totalG1 = _calcularTotalG1();
     int totalG2 = _calcularTotalG2();
-
-    
+    int granTotalCalculado = _lista.fold(0, (sum, item) => sum + item.sTot);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Lista',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Listas', style: TextStyle(color: Colors.white)),
         backgroundColor: verdeCoca,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Text(
@@ -161,20 +131,15 @@ class _PantallaListasState extends State<PantallaListas> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-
+            const SizedBox(height: 10),
             TextField(
               controller: _lugarCtrl,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
-              decoration: _outlineInput(
-                'Lugar de cosecha',
-                Icons.location_on,
-                verdeCoca,
-              ),
+              decoration: _outlineInput('Lugar', Icons.location_on, verdeCoca),
               onChanged: (v) => _guardarDatos(),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
@@ -200,138 +165,72 @@ class _PantallaListasState extends State<PantallaListas> {
                 ),
               ],
             ),
-
-            const Divider(height: 30),
-            const Text(
-              'Anotar cosechadores:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(height: 15),
-
+            const Divider(height: 10),
             Row(
               children: [
                 Expanded(
-                  flex: 4,
+                  flex: 2,
+                  child: Text(
+                    'Anotar cosechador',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
                   child: TextField(
                     controller: _nombreNuevoCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
                     decoration: _outlineInput(
                       'Nombre',
                       Icons.person_add,
                       Colors.black54,
                     ),
-                    textCapitalization: TextCapitalization.words,
-                    textInputAction: TextInputAction.next,
                   ),
                 ),
-                const SizedBox(width: 6),
+
+                const SizedBox(width: 8),
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: TextField(
                     controller: _pesoNuevoCtrl,
+                    keyboardType: TextInputType.number,
                     decoration: _outlineInput(
                       'Peso 1',
                       Icons.scale,
                       Colors.black54,
                     ),
-                    keyboardType: TextInputType.number,
                   ),
-                ),
-                const SizedBox(width: 6),
-                
-                
-                IconButton.filled(                  
-                  onPressed: _agregarCosechador,
-                  style: IconButton.styleFrom(
-                    backgroundColor: rojoVino,
-                    padding: const EdgeInsets.all(12),
-                    ),
-                  
-                  icon: const Icon(Icons.add),
                 ),
               ],
             ),
 
-            const SizedBox(height: 25),
+            SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: IconButton.filled(
+                    onPressed: _agregarCosechador,
 
-            // --- TABLA ---
-            Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                border: Border.all(color: verdeCoca),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Table(
-                border: TableBorder.all(color: verdeCoca.withOpacity(0.2)),
-                columnWidths: const {
-                  0: FlexColumnWidth(1),
-                  1: FlexColumnWidth(1),
-                  2: FlexColumnWidth(3.5),
-                  3: FlexColumnWidth(1.6),
-                  4: FlexColumnWidth(1.6),
-                  5: FlexColumnWidth(1.6),
-                  6: FlexColumnWidth(1.6),
-                  7: FlexColumnWidth(1.6),
-                },
-                children: [
-                  TableRow(
-                    decoration: BoxDecoration(
-                      color: verdeCoca.withOpacity(0.1),
-                    ),
-                    children: const [
-                      _HeaderCelda('G1'),
-                      _HeaderCelda('G2'),
-                      _HeaderCelda('Nombre'),
-                      _HeaderCelda('P1'),
-                      _HeaderCelda('P2'),
-                      _HeaderCelda('P3'),
-                      _HeaderCelda('P4'),
-                      _HeaderCelda('Tot'),
-                    ],
+                    style: IconButton.styleFrom(backgroundColor: rojoVino),
+
+                    icon: const Text( "Anotar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                   ),
-                  ..._lista.map(
-                    (item) => TableRow(
-                      children: [
-                        _checkCelda(
-                          item.g1,
-                          rojoVino,
-                          (v) => setState(() {
-                            item.g1 = v!;
-                            _guardarDatos();
-                          }),
-                        ),
-                        _checkCelda(
-                          item.g2,
-                          verdeCoca,
-                          (v) => setState(() {
-                            item.g2 = v!;
-                            _guardarDatos();
-                          }),
-                        ),
-                        _inputTabla(item.nombreCtrl, false, TextAlign.left),
-                        _inputTabla(item.p1Ctrl, true, TextAlign.center),
-                        _inputTabla(item.p2Ctrl, true, TextAlign.center),
-                        _inputTabla(item.p3Ctrl, true, TextAlign.center),
-                        _inputTabla(item.p4Ctrl, true, TextAlign.center),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            item.sTot.toString(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-
             const SizedBox(height: 25),
+            _buildTabla(),
+            const SizedBox(height: 30),
 
-            // --- SECCIÓN DE TOTALES ---
             Container(
               padding: const EdgeInsets.all(15),
+              margin: const EdgeInsets.symmetric(vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
@@ -340,11 +239,11 @@ class _PantallaListasState extends State<PantallaListas> {
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _ResumenDato("Cant:", "${_lista.length}", Colors.black),
-                      _ResumenDato("Total G1:", "$totalG1", rojoVino),
-                      _ResumenDato("Total G2:", "$totalG2", verdeCoca),
+                      _resumenDato("Cant:", "${_lista.length}", Colors.black),
+                      _resumenDato("Tot G1:", "$totalG1", rojoVino),
+                      _resumenDato("Tot G2:", "$totalG2", verdeCoca),
                     ],
                   ),
                   const Divider(),
@@ -352,19 +251,15 @@ class _PantallaListasState extends State<PantallaListas> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Totalizado: ",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        "Gran Total: ",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         "$granTotalCalculado",
                         style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
                           color: Colors.blueGrey,
-                        
                         ),
                       ),
                     ],
@@ -373,85 +268,68 @@ class _PantallaListasState extends State<PantallaListas> {
               ),
             ),
 
-            const SizedBox(height: 30),
-
-            // --- BOTONES DE ACCIÓN ---
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: verdeCoca),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PantallaGuardados(),
-                      ),
-                    ),
-                    icon: Icon(Icons.folder, color: verdeCoca),
-                    label: Text(
-                      "Guardados",
-                      style: TextStyle(
-                        color: verdeCoca,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: rojoVino,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () => _mostrarConfirmacion(totalG1, totalG2),
-                    icon: const Icon(Icons.save),
-                    label: const Text(
-                      "Guardar",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
+            _buildBotonGuardar(totalG1, totalG2, granTotalCalculado),
           ],
         ),
       ),
     );
   }
 
-  // --- COMPONENTES INTERNOS ---
-  void _mostrarConfirmacion(int g1, int g2) async {
+  Widget _buildBotonGuardar(int g1, int g2, int total) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PantallaGuardados(),
+              ),
+            ),
+            icon: const Icon(Icons.folder_open), // Icono de carpeta
+            label: const Text("GUARDADOS"),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              side: BorderSide(color: verdeCoca),
+              foregroundColor: verdeCoca,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Botón GUARDAR (Antiguo Guardar Día)
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => _mostrarConfirmacion(g1, g2, total),
+            icon: const Icon(Icons.save), // Icono de guardar
+            label: const Text("GUARDAR"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: rojoVino,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              elevation: 3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-    // Calculamos el Gran Total absoluto sumando todos los 'sTot' de la lista
-  final int granTotalReal = _lista.fold(0, (sum, item) => sum + item.sTot);
-
+  void _mostrarConfirmacion(int g1, int g2, int granTotal) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Finalizar apunte?'),
+        title: const Text('¿Finalizar día?'),
         content: const Text(
-          'Se guardará la lista y se limpiará la lista actual.',
+          'Se guardará en el historial y se generará el PDF.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('No'),
+            child: const Text('NO'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sí, Guardar'),
+            child: const Text('SÍ'),
           ),
         ],
       ),
@@ -466,18 +344,138 @@ class _PantallaListasState extends State<PantallaListas> {
         lista: _lista,
         totalG1: g1,
         totalG2: g2,
-        granTotal: granTotalReal,
+        granTotal: granTotal,
       );
+
       if (ruta != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final String? historialPrevio = prefs.getString('historial_resumenes');
+        List<dynamic> historial = historialPrevio != null
+            ? jsonDecode(historialPrevio)
+            : [];
+
+        historial.add({
+          'id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'fecha': _fechaActual,
+          'cant': _lista.length,
+          'g1': g1,
+          'g2': g2,
+          'total': granTotal,
+          'rutaPdf': ruta,
+        });
+
+        await prefs.setString('historial_resumenes', jsonEncode(historial));
         _limpiarTodo();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Apunte guardado con éxito")));
       }
     }
   }
 
-  Widget _ResumenDato(String label, String valor, Color color) {
+  InputDecoration _outlineInput(String label, IconData icono, Color color) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icono, color: color),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: color.withOpacity(0.4)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: color, width: 2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      contentPadding: const EdgeInsets.all(12),
+    );
+  }
+
+  Widget _buildTabla() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: verdeCoca),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Table(
+        columnWidths: const {
+          0: FlexColumnWidth(10),
+          1: FlexColumnWidth(10),
+          2: FlexColumnWidth(35),
+          3: FlexColumnWidth(16),
+          4: FlexColumnWidth(16),
+          5: FlexColumnWidth(16),
+          6: FlexColumnWidth(16),
+          7: FlexColumnWidth(20),
+        },
+        children: [
+          TableRow(
+            decoration: BoxDecoration(color: verdeCoca.withOpacity(0.1)),
+            children: const [
+              _HeaderCelda('G1'),
+              _HeaderCelda('G2'),
+              _HeaderCelda('Nombre'),
+              _HeaderCelda('P1'),
+              _HeaderCelda('P2'),
+              _HeaderCelda('P3'),
+              _HeaderCelda('P4'),
+              _HeaderCelda('Tot'),
+            ],
+          ),
+          ..._lista.map(
+            (item) => TableRow(
+              children: [
+                Checkbox(
+                  value: item.g1,
+                  activeColor: rojoVino,
+                  onChanged: (v) => setState(() {
+                    item.g1 = v!;
+                    _guardarDatos();
+                  }),
+                ),
+                Checkbox(
+                  value: item.g2,
+                  activeColor: verdeCoca,
+                  onChanged: (v) => setState(() {
+                    item.g2 = v!;
+                    _guardarDatos();
+                  }),
+                ),
+                _inputTabla(item.nombreCtrl, false, TextAlign.left),
+                _inputTabla(item.p1Ctrl, true, TextAlign.center),
+                _inputTabla(item.p2Ctrl, true, TextAlign.center),
+                _inputTabla(item.p3Ctrl, true, TextAlign.center),
+                _inputTabla(item.p4Ctrl, true, TextAlign.center),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    item.sTot.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _inputTabla(TextEditingController ctrl, bool num, TextAlign ali) {
+    return TextField(
+      controller: ctrl,
+      keyboardType: num ? TextInputType.number : TextInputType.text,
+      textAlign: ali,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      decoration: const InputDecoration(
+        border: InputBorder.none,
+        isDense: true, // Hace el campo más compacto
+        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 2),
+      ),
+      onChanged: (v) {
+        setState(() {});
+        _guardarDatos();
+      },
+    );
+  }
+
+  Widget _resumenDato(String label, String valor, Color color) {
     return Column(
       children: [
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
@@ -492,26 +490,6 @@ class _PantallaListasState extends State<PantallaListas> {
       ],
     );
   }
-
-  Widget _checkCelda(bool val, Color col, Function(bool?) onCh) =>
-      Checkbox(value: val, activeColor: col, onChanged: onCh);
-
-  Widget _inputTabla(TextEditingController ctrl, bool num, TextAlign ali) {
-    return TextField(
-      controller: ctrl,
-      keyboardType: num ? TextInputType.number : TextInputType.text,
-      textAlign: ali,
-      style: const TextStyle(fontSize: 13),
-      decoration: const InputDecoration(
-        border: InputBorder.none,
-        contentPadding: EdgeInsets.all(8),
-      ),
-      onChanged: (v) {
-        setState(() {});
-        _guardarDatos();
-      },
-    );
-  }
 }
 
 class _HeaderCelda extends StatelessWidget {
@@ -523,8 +501,7 @@ class _HeaderCelda extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: Text(
         texto,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
       ),
     );
   }
