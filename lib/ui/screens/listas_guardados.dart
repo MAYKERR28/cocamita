@@ -26,7 +26,12 @@ class _PantallaGuardadosState extends State<PantallaGuardados> {
     final prefs = await SharedPreferences.getInstance();
     final String? data = prefs.getString('historial_resumenes');
     if (data != null) {
-      setState(() => _historial = jsonDecode(data));
+      List<dynamic> listaData = jsonDecode(data);
+      setState(() {
+      // Invertimos aquí para que el índice 0 sea el más reciente
+      _historial = listaData.reversed.toList();
+    });
+
     }
   }
 
@@ -185,7 +190,9 @@ class _PantallaGuardadosState extends State<PantallaGuardados> {
       _historial.removeAt(index);
     });
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('historial_resumenes', jsonEncode(_historial));
+    // IMPORTANTE: Al guardar, invertimos de nuevo (.reversed) 
+    // para que en el archivo de memoria el orden sea el correcto
+    await prefs.setString('historial_resumenes', jsonEncode(_historial.reversed.toList()));
   }
 }
 

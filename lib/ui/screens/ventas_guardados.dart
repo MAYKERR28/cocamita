@@ -56,8 +56,17 @@ class _PantallaVentasGuardadosState extends State<PantallaVentasGuardados> {
             child: ListView.builder(
               padding: const EdgeInsets.all(15),
               itemCount: _historial.length,
-              itemBuilder: (context, index) =>
-                  _buildCardVenta(_historial[index], index),
+              itemBuilder: (context, index) {
+                // ESTA LÍNEA HACE EL TRUCO:
+                // Accedemos al historial en orden inverso
+                final itemInverso = _historial.reversed.toList()[index];
+
+                // Pasamos el item inverso y el index real para que eliminar siga funcionando
+                return _buildCardVenta(
+                  itemInverso,
+                  (_historial.length - 1 - index),
+                );
+              },
             ),
           ),
           _buildFooterGeneral(),
@@ -123,12 +132,13 @@ class _PantallaVentasGuardadosState extends State<PantallaVentasGuardados> {
                         final archivo = File(ruta);
                         if (await archivo.exists()) {
                           // 3. Compartimos usando XFile
-                          await Share.shareXFiles(
-                            [XFile(ruta)], 
-                            text: 'Reporte de Venta - ${item['fecha']}'
-                          );
+                          await Share.shareXFiles([
+                            XFile(ruta),
+                          ], text: 'Reporte de Venta - ${item['fecha']}');
                         } else {
-                          _mostrarMensaje("El archivo PDF ya no existe en la memoria.");
+                          _mostrarMensaje(
+                            "El archivo PDF ya no existe en la memoria.",
+                          );
                         }
                       } else {
                         _mostrarMensaje("No se encontró la ruta del archivo.");
@@ -233,7 +243,7 @@ class _PantallaVentasGuardadosState extends State<PantallaVentasGuardados> {
       builder: (context) => AlertDialog(
         title: const Text('¿Eliminar esta venta?'),
         content: const Text(
-          'Se borrará del historial. El archivo físico PDF no se eliminará del teléfono.',
+          'Se borrará el doc de la App. Pero el archivo físico PDF se mantendrá en el teléfono.',
         ),
         actions: [
           TextButton(
@@ -262,8 +272,8 @@ class _PantallaVentasGuardadosState extends State<PantallaVentasGuardados> {
   }
 
   void _mostrarMensaje(String mensaje) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent)
-  );
-}
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
+    );
+  }
 }
