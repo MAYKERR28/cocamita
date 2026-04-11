@@ -67,14 +67,10 @@ class _PantallaListasState extends State<PantallaListas> {
   }
 
   void _agregarCosechador() {
+    
     if (_nombreNuevoCtrl.text.isNotEmpty) {
       setState(() {
-        _lista.add(
-          CosechadorItem(
-            nombre: _nombreNuevoCtrl.text,
-            p1: _pesoNuevoCtrl.text,
-          ),
-        );
+        _lista.insert(0, CosechadorItem(nombre: _nombreNuevoCtrl.text.trim(), p1: _pesoNuevoCtrl.text));
         _nombreNuevoCtrl.clear();
         _pesoNuevoCtrl.clear();
       });
@@ -84,7 +80,7 @@ class _PantallaListasState extends State<PantallaListas> {
         SnackBar(
           content: const Text('Anotado correctamente'),
           backgroundColor: verdeCoca,
-          duration: const Duration(seconds: 1),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -113,21 +109,42 @@ class _PantallaListasState extends State<PantallaListas> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Listas', style: TextStyle(color: Colors.white)),
+        toolbarHeight: 80,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30), // Ajusta el radio según prefieras
+          ),
+        ),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.edit_note, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Lista",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
         backgroundColor: verdeCoca,
+        centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
             Center(
               child: Text(
                 _fechaActual,
                 style: TextStyle(
-                  color: verdeCoca,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -210,16 +227,23 @@ class _PantallaListasState extends State<PantallaListas> {
               ],
             ),
 
-            SizedBox(height: 6),
+            SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
-                  child: IconButton.filled(
+                  child: IconButton.filled(        
+                    padding: EdgeInsets.all(15),            
                     onPressed: _agregarCosechador,
-
+                    
                     style: IconButton.styleFrom(backgroundColor: rojoVino),
 
-                    icon: const Text( "Anotar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    icon: const Text(
+                      "Anotar",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -287,7 +311,7 @@ class _PantallaListasState extends State<PantallaListas> {
               ),
             ),
             icon: const Icon(Icons.folder_open), // Icono de carpeta
-            label: const Text("GUARDADOS"),
+            label: const Text("Guardados"),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 15),
               side: BorderSide(color: verdeCoca),
@@ -301,7 +325,7 @@ class _PantallaListasState extends State<PantallaListas> {
           child: ElevatedButton.icon(
             onPressed: () => _mostrarConfirmacion(g1, g2, total),
             icon: const Icon(Icons.save), // Icono de guardar
-            label: const Text("GUARDAR"),
+            label: const Text("Guardar"),
             style: ElevatedButton.styleFrom(
               backgroundColor: rojoVino,
               foregroundColor: Colors.white,
@@ -389,70 +413,86 @@ class _PantallaListasState extends State<PantallaListas> {
   Widget _buildTabla() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: verdeCoca),
+        border: Border.all(color: verdeCoca, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Table(
-        columnWidths: const {
-          0: FlexColumnWidth(10),
-          1: FlexColumnWidth(10),
-          2: FlexColumnWidth(35),
-          3: FlexColumnWidth(16),
-          4: FlexColumnWidth(16),
-          5: FlexColumnWidth(16),
-          6: FlexColumnWidth(16),
-          7: FlexColumnWidth(20),
-        },
-        children: [
-          TableRow(
-            decoration: BoxDecoration(color: verdeCoca.withOpacity(0.1)),
-            children: const [
-              _HeaderCelda('G1'),
-              _HeaderCelda('G2'),
-              _HeaderCelda('Nombre'),
-              _HeaderCelda('P1'),
-              _HeaderCelda('P2'),
-              _HeaderCelda('P3'),
-              _HeaderCelda('P4'),
-              _HeaderCelda('Tot'),
-            ],
-          ),
-          ..._lista.map(
-            (item) => TableRow(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Container(
+            width: 450,
+
+            child: Table(
+              border: TableBorder.all(
+                color: verdeCoca.withOpacity(0.5),
+                width: 1,
+              ),
+              columnWidths: const {
+                0: FlexColumnWidth(1.05),
+                1: FlexColumnWidth(1.05),
+                2: FlexColumnWidth(3.2),
+                3: FlexColumnWidth(1.5),
+                4: FlexColumnWidth(1.5),
+                5: FlexColumnWidth(1.5),
+                6: FlexColumnWidth(1.5),
+                7: FlexColumnWidth(1.7),
+              },
               children: [
-                Checkbox(
-                  value: item.g1,
-                  activeColor: rojoVino,
-                  onChanged: (v) => setState(() {
-                    item.g1 = v!;
-                    _guardarDatos();
-                  }),
+                TableRow(
+                  decoration: BoxDecoration(color: verdeCoca.withOpacity(0.1)),
+                  children: const [
+                    _HeaderCelda('G1'),
+                    _HeaderCelda('G2'),
+                    _HeaderCelda('Nombre'),
+                    _HeaderCelda('P1'),
+                    _HeaderCelda('P2'),
+                    _HeaderCelda('P3'),
+                    _HeaderCelda('P4'),
+                    _HeaderCelda('sTot'),
+                  ],
                 ),
-                Checkbox(
-                  value: item.g2,
-                  activeColor: verdeCoca,
-                  onChanged: (v) => setState(() {
-                    item.g2 = v!;
-                    _guardarDatos();
-                  }),
-                ),
-                _inputTabla(item.nombreCtrl, false, TextAlign.left),
-                _inputTabla(item.p1Ctrl, true, TextAlign.center),
-                _inputTabla(item.p2Ctrl, true, TextAlign.center),
-                _inputTabla(item.p3Ctrl, true, TextAlign.center),
-                _inputTabla(item.p4Ctrl, true, TextAlign.center),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    item.sTot.toString(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                ..._lista.map(
+                  (item) => TableRow(
+                    children: [
+                      Checkbox(
+                        value: item.g1,
+                        activeColor: rojoVino,
+                        onChanged: (v) => setState(() {
+                          item.g1 = v!;
+                          _guardarDatos();
+                        }),
+                      ),
+                      Checkbox(
+                        value: item.g2,
+                        activeColor: verdeCoca,
+                        onChanged: (v) => setState(() {
+                          item.g2 = v!;
+                          _guardarDatos();
+                        }),
+                      ),
+                      _inputTabla(item.nombreCtrl, false, TextAlign.left),
+                      _inputTabla(item.p1Ctrl, true, TextAlign.center),
+                      _inputTabla(item.p2Ctrl, true, TextAlign.center),
+                      _inputTabla(item.p3Ctrl, true, TextAlign.center),
+                      _inputTabla(item.p4Ctrl, true, TextAlign.center),
+
+                      // En las columnas de tu TableRow:
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          item.sTot.toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -501,7 +541,8 @@ class _HeaderCelda extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: Text(
         texto,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
       ),
     );
   }

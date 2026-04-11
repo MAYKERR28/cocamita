@@ -30,7 +30,7 @@ class PantallaBienvenida extends StatelessWidget {
           style: TextStyle(
             color: Colors.white, 
             fontSize: 26, 
-            fontWeight: FontWeight.bold
+            fontWeight: FontWeight.w600
           ),
         ),
         centerTitle: true,
@@ -40,49 +40,54 @@ class PantallaBienvenida extends StatelessWidget {
         // Redondeado inferior para un estilo más orgánico
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(40),
+            bottom: Radius.circular(30),
           ),
         ),
       ),
       // --- CAMBIO: Uso de SingleChildScrollView para el scroll ---
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Column(
             children: [
-              
               // Icono de bienvenida
-              const Icon(Icons.handshake, size: 80, color: Color(0xFF004D40)),
+              const Icon(Icons.handshake, size: 72, color: Color(0xFF004D40)),
               
               const Text(
                 '¡ Bienvenido !',
                 style: TextStyle(
-                  fontSize: 24, 
-                  fontWeight: FontWeight.bold, 
+                  fontSize: 28, 
+                  fontWeight: FontWeight.w500, 
                   color: Color(0xFF004D40)
                 ),
               ),
               
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
-                  'Cuaderno digital de apuntes para el agricultor coc@lero',
+                  'Cuaderno digital para el agricultor coc@lero. App para facilitar el trabajo.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const Divider(
+                height: 20,
+                thickness: 1,
+                indent: 50,
+                endIndent: 50,   
+                color: Color(0xFF004D40),             
+              ),
               Text(
-                'Apuntes', 
+                'Apuntes de:', 
                 style: TextStyle(
-                  fontSize: 32, 
+                  fontSize: 28, 
                   color: rojoVino, 
-                  fontWeight: FontWeight.bold
+                  fontWeight: FontWeight.w500
                 )
               ),
               
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
 
               // Sección de botones principales
               Padding(
@@ -90,9 +95,9 @@ class PantallaBienvenida extends StatelessWidget {
                 child: Column(
                   children: [
                     BotonMenuPrincipal(
-                      titulo: 'Listas',
+                      titulo: 'Listas',                                        
                       icono: Icons.edit_note,
-                      color: verdeCoca,
+                      color: verdeCoca,                  
                       onTap: () {
                         Navigator.push(
                           context,
@@ -100,7 +105,7 @@ class PantallaBienvenida extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 25),
+                    const SizedBox(height:15),
                     BotonMenuPrincipal(
                       titulo: 'Ventas',
                       icono: Icons.shopping_cart,
@@ -116,9 +121,15 @@ class PantallaBienvenida extends StatelessWidget {
                 ),
               ),
               
-              const SizedBox(height: 40),
+              const Divider(
+                height: 30,
+                thickness: 1,
+                indent: 50,
+                endIndent: 50,     
+                color: Color(0xFF004D40),             
+              ),
               const Text(
-                '! No gastes la batería hasta terminar el día ¡', 
+                '! Guarda batería hasta terminar el día ¡', 
                 style: TextStyle(color: Color(0xFF00796B), fontSize: 12)
               ),
               
@@ -128,9 +139,9 @@ class PantallaBienvenida extends StatelessWidget {
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  style: const TextStyle(color: Colors.black87, fontSize: 12),
+                  style: const TextStyle(color: Colors.black87, fontSize: 14),
                   children: [
-                    const TextSpan(text: "Al usar la CocaMita, acepta nuestras\n"),
+                    const TextSpan(text: "Al usar CocaMita, acepta nuestas\n"),
                     TextSpan(
                       text: "Políticas de privacidad",
                       style: TextStyle(color: rojoVino, fontWeight: FontWeight.bold),
@@ -138,20 +149,20 @@ class PantallaBienvenida extends StatelessWidget {
                     ),
                     const TextSpan(text: " y los "),
                     TextSpan(
-                      text: "Términos y condiciones.",
+                      text: "Términos y condiciones",
                       style: TextStyle(color: rojoVino, fontWeight: FontWeight.bold),
                       recognizer: TapGestureRecognizer()..onTap = () => _abrirEnlace('https://tuweb.com/terminos'),
                     ),
+                    TextSpan(text: "."),
                   ],
                 ),
               ),
               
-              const SizedBox(height: 20),
+              const SizedBox(height: 50),
               Text(
                 "@ 2026 mayker / CocaMita. All rights reserved", 
-                style: TextStyle(color: verdeCoca, fontSize: 11)
-              ),
-              const SizedBox(height: 20),
+                style: TextStyle(color: Colors.black54, fontSize: 12)
+              ),              
             ],
           ),
         ),

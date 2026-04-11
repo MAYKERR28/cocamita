@@ -26,13 +26,13 @@ class ServicioPdf {
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
             return [
-              pw.Text('Apuntes de Cosecha - CocaMita', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.Text('CocaMita: Apuntes de Cosecha.', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 20),
               pw.Text('Fecha: $fecha', style: const pw.TextStyle(fontSize: 14)),
               pw.Text('Lugar: $lugar', style: const pw.TextStyle(fontSize: 14)),
               pw.SizedBox(height: 10),
               pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
                 children: [
                   pw.Text('Grupo 1: $grupo1', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                   pw.Text('Grupo 2: $grupo2', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
@@ -43,16 +43,16 @@ class ServicioPdf {
                 context: context,
                 cellAlignment: pw.Alignment.center,
                 headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-                headers: ['Nombres', 'P1', 'P2', 'P3', 'P4', 'G1', 'G2', 'sTot'],
+                headers: ['Nombres', 'G1', 'G2', 'P1', 'P2', 'P3', 'P4', 'sTot'],
                 data: lista.map((item) {
-                  return [
+                  return [                    
                     item.nombreCtrl.text,
+                    item.g1 ? 'X' : '', 
+                    item.g2 ? 'X' : '',
                     item.p1Ctrl.text,
                     item.p2Ctrl.text,
                     item.p3Ctrl.text,
-                    item.p4Ctrl.text,
-                    item.g1 ? 'X' : '', 
-                    item.g2 ? 'X' : '',
+                    item.p4Ctrl.text,                    
                     item.sTot.toString(),
                   ];
                 }).toList(),

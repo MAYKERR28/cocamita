@@ -32,8 +32,19 @@ class _PantallaVentasState extends State<PantallaVentas> {
   @override
   void initState() {
     super.initState();
-    _fechaActual = DateFormat("EEEE d 'de' MMMM 'del' y", 'es_ES').format(DateTime.now());
+    String fecha = DateFormat(
+      "EEEE d 'de' MMMM 'del' y",
+      'es_ES',
+    ).format(DateTime.now());
+
+    // Convertimos la primera letra a Mayúscula
+    _fechaActual = _capitalizarTexto(fecha);
     _cargarDatosTemporales(); // Cargar datos si se cerró la app
+  }
+
+  String _capitalizarTexto(String texto) {
+    if (texto.isEmpty) return texto;
+    return texto[0].toUpperCase() + texto.substring(1);
   }
 
   // --- PERSISTENCIA (DATOS TEMPORALES) ---
@@ -45,7 +56,7 @@ class _PantallaVentasState extends State<PantallaVentas> {
     await prefs.setString('temp_comprador', _compradorCtrl.text);
     await prefs.setString('temp_arroba', _arrobaValorCtrl.text);
     await prefs.setString('temp_precio', _precioCtrl.text);
-    
+
     List<String> listaString = _controlesPesos.map((c) => c.text).toList();
     await prefs.setStringList('temp_pesos', listaString);
   }
@@ -58,18 +69,21 @@ class _PantallaVentasState extends State<PantallaVentas> {
       _compradorCtrl.text = prefs.getString('temp_comprador') ?? '';
       _arrobaValorCtrl.text = prefs.getString('temp_arroba') ?? '25';
       _precioCtrl.text = prefs.getString('temp_precio') ?? '';
-      
+
       List<String>? listaGuardada = prefs.getStringList('temp_pesos');
       if (listaGuardada != null) {
-        _controlesPesos = listaGuardada.map((p) => TextEditingController(text: p)).toList();
+        _controlesPesos = listaGuardada
+            .map((p) => TextEditingController(text: p))
+            .toList();
       }
     });
   }
 
   // --- LÓGICA MATEMÁTICA ---
 
-  double get totalPesos => _controlesPesos.fold(0, (sum, c) => sum + (double.tryParse(c.text) ?? 0));
-  
+  double get totalPesos =>
+      _controlesPesos.fold(0, (sum, c) => sum + (double.tryParse(c.text) ?? 0));
+
   double get totalArrobas {
     double arroba = double.tryParse(_arrobaValorCtrl.text) ?? 1;
     return arroba > 0 ? totalPesos / arroba : 0;
@@ -82,12 +96,37 @@ class _PantallaVentasState extends State<PantallaVentas> {
 
   void _anotarPeso() {
     if (_pesoInputCtrl.text.isNotEmpty) {
+      // Guardamos el valor para mostrarlo en el mensaje
+      String pesoAnotado = _pesoInputCtrl.text;
+
       setState(() {
-        _controlesPesos.add(TextEditingController(text: _pesoInputCtrl.text));
+        _controlesPesos.insert(0, TextEditingController(text: pesoAnotado));
         _pesoInputCtrl.clear();
       });
       _guardarDatosTemporales();
       FocusScope.of(context).unfocus(); // Ocultar teclado
+
+      // --- NUEVA NOTIFICACIÓN ---
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Peso $pesoAnotado agregado correctamente"),
+          backgroundColor: verdeVenta, // Usamos el color verde de tu diseño
+          duration: const Duration(seconds: 2), // Se quita solo en 2 segundos
+          behavior:
+              SnackBarBehavior.floating, // Hace que flote sobre los botones
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } else {
+      // Opcional: Notificación si intentan anotar vacío
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Por favor, ingrese un peso primero"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
 
@@ -100,10 +139,18 @@ class _PantallaVentasState extends State<PantallaVentas> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("¿Guardar Venta?"),
-        content: const Text("Se generará un archivo PDF y se limpiará la pantalla."),
+        content: const Text(
+          "Se generará un archivo PDF y se limpiará la pantalla.",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("No")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Sí, Aceptar")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Sí, Aceptar"),
+          ),
         ],
       ),
     );
@@ -115,7 +162,9 @@ class _PantallaVentasState extends State<PantallaVentas> {
         lugar: _lugarCtrl.text,
         vendedor: _vendedorCtrl.text,
         comprador: _compradorCtrl.text,
-        pesos: _controlesPesos.map((c) => double.tryParse(c.text) ?? 0).toList(),
+        pesos: _controlesPesos
+            .map((c) => double.tryParse(c.text) ?? 0)
+            .toList(),
         totalPesos: totalPesos,
         arroba: double.tryParse(_arrobaValorCtrl.text) ?? 25,
         totalArrobas: totalArrobas,
@@ -167,11 +216,26 @@ class _PantallaVentasState extends State<PantallaVentas> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.shopping_cart, color: Colors.white),
-          SizedBox(width: 10),
-          Text("Venta", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ]),
+        toolbarHeight: 80,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30), // Ajusta el radio según prefieras
+          ),
+        ),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.shopping_cart, color: Colors.white),
+            SizedBox(width: 10),
+            Text(
+              "Venta",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
         backgroundColor: rojoVenta,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -180,31 +244,70 @@ class _PantallaVentasState extends State<PantallaVentas> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text(_fechaActual, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(
+              _fechaActual,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black),
+            ),
             const SizedBox(height: 15),
-            _inputVenta(_lugarCtrl, "Lugar de pesada:", Icons.location_on, Colors.black),
+            _inputVenta(
+              _lugarCtrl,
+              "Lugar de pesada:",
+              Icons.location_on,
+              Colors.black,
+            ),
             const SizedBox(height: 10),
-            Row(children: [
-              Expanded(child: _inputVenta(_vendedorCtrl, "Vendedor:", Icons.person, rojoVenta)),
-              const SizedBox(width: 8),
-              Expanded(child: _inputVenta(_compradorCtrl, "Comprador:", Icons.person_outline, rojoVenta)),
-            ]),
-            
+            Row(
+              children: [
+                Expanded(
+                  child: _inputVenta(
+                    _vendedorCtrl,
+                    "Vendedor:",
+                    Icons.person,
+                    rojoVenta,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _inputVenta(
+                    _compradorCtrl,
+                    "Comprador:",
+                    Icons.person_outline,
+                    rojoVenta,
+                  ),
+                ),
+              ],
+            ),
+
             const Divider(height: 20),
-            
-            Row(children: [
-              Expanded(flex: 3, child: _inputVenta(_pesoInputCtrl, "Ingrese peso:", Icons.scale, verdeVenta, esNum: true)),
-              const SizedBox(width: 8),
-              
-              Expanded(flex: 2, child: ElevatedButton(
-                
-                onPressed: _anotarPeso,
-                style: ElevatedButton.styleFrom(backgroundColor: verdeVenta, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12)),
-                child: const Text("Anotar"),
-              ),
-              )
-              
-            ]),
+
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: _inputVenta(
+                    _pesoInputCtrl,
+                    "Ingrese peso:",
+                    Icons.scale,
+                    verdeVenta,
+                    esNum: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: _anotarPeso,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: verdeVenta,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text("Anotar"),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
             _buildTablaEditable(),
             const SizedBox(height: 20),
@@ -220,92 +323,213 @@ class _PantallaVentasState extends State<PantallaVentas> {
   Widget _buildTablaEditable() {
     return Container(
       height: 320,
-      decoration: BoxDecoration(border: Border.all(color: verdeVenta), borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        border: Border.all(color: verdeVenta),
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: ListView(children: [
-          Table(
-            border: TableBorder.symmetric(inside: BorderSide(color: verdeVenta.withOpacity(0.2))),
-            columnWidths: const {0: FlexColumnWidth(1), 1: FlexColumnWidth(2)},
-            children: [
-              TableRow(decoration: BoxDecoration(color: verdeVenta.withOpacity(0.1)), children: [
-                _celdaHeader("N°"), _celdaHeader("Pesos"),
-              ]),
-              ...List.generate(_controlesPesos.length, (index) => TableRow(children: [
-                Padding(padding: const EdgeInsets.all(12), child: Text("${index + 1}", textAlign: TextAlign.center)),
-                TextField(
-                  controller: _controlesPesos[index],
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(border: InputBorder.none, isDense: true),
-                  onChanged: (v) { setState(() {}); _guardarDatosTemporales(); },
+        child: ListView(
+          children: [
+            Table(
+              border: TableBorder.symmetric(
+                inside: BorderSide(color: verdeVenta.withOpacity(0.2)),
+              ),
+              columnWidths: const {
+                0: FlexColumnWidth(1),
+                1: FlexColumnWidth(2),
+              },
+              children: [
+                TableRow(
+                  decoration: BoxDecoration(color: verdeVenta.withOpacity(0.1)),
+                  children: [_celdaHeader("N°"), _celdaHeader("Pesos")],
                 ),
-              ])),
-            ],
-          ),
-        ]),
+                ...List.generate(
+                  _controlesPesos.length,
+                  (index) => TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          "${_controlesPesos.length - index}",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      TextField(
+                        controller: _controlesPesos[index],
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                        onChanged: (v) {
+                          setState(() {});
+                          _guardarDatosTemporales();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSeccionCalculos() {
-    return Column(children: [
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text("Cant: ${_controlesPesos.length}", style: TextStyle(color: rojoVenta, fontWeight: FontWeight.w600)),
-        Text("Total P: ${totalPesos.toStringAsFixed(1)}", style: TextStyle(color: verdeVenta, fontWeight: FontWeight.w600)),
-        Row(children: [
-          const Text("Arroba: "),
-          SizedBox(width: 45, child: TextField(
-            controller: _arrobaValorCtrl, style: const TextStyle(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.number, 
-            onChanged: (v) { setState(() {}); _guardarDatosTemporales(); },
-            decoration: const InputDecoration(isDense: true),
-            
-          )),
-        ]),
-      ]),
-      const Divider(height: 30),
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text("Total arrobas:", style: TextStyle(color: rojoVenta, fontWeight: FontWeight.bold)),
-        Text(totalArrobas.toStringAsFixed(2), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(width: 145, child: _inputVenta(_precioCtrl, "Precio", Icons.payments, verdeVenta, esNum: true, alCambiar: (v) { setState(() {}); _guardarDatosTemporales(); })),
-      ]),
-      const SizedBox(height: 25),
-      Text("Total S/. ${totalDinero.toStringAsFixed(2)}", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600, color: verdeVenta)),
-    ]);
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Cant: ${_controlesPesos.length}",
+              style: TextStyle(color: rojoVenta, fontWeight: FontWeight.w600),
+            ),
+            Text(
+              "Total P: ${totalPesos.toStringAsFixed(1)}",
+              style: TextStyle(color: verdeVenta, fontWeight: FontWeight.w600),
+            ),
+            Row(
+              children: [
+                const Text("Arroba: "),
+                SizedBox(
+                  width: 45,
+                  child: TextField(
+                    controller: _arrobaValorCtrl,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) {
+                      setState(() {});
+                      _guardarDatosTemporales();
+                    },
+                    decoration: const InputDecoration(isDense: true),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const Divider(height: 30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Total arrobas:",
+              style: TextStyle(color: rojoVenta, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              totalArrobas.toStringAsFixed(2),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              width: 145,
+              child: _inputVenta(
+                _precioCtrl,
+                "Precio",
+                Icons.payments,
+                verdeVenta,
+                esNum: true,
+                alCambiar: (v) {
+                  setState(() {});
+                  _guardarDatosTemporales();
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 25),
+        Text(
+          "Total S/. ${totalDinero.toStringAsFixed(2)}",
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w600,
+            color: verdeVenta,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildBotonesFinales() {
-    return Row(children: [
-      Expanded(child: OutlinedButton.icon(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PantallaVentasGuardados())),
-        icon: const Icon(Icons.folder_open),
-        label: const Text("Guardados"),
-        style: OutlinedButton.styleFrom(foregroundColor: rojoVenta, side: BorderSide(color: rojoVenta), padding: const EdgeInsets.symmetric(vertical: 15)),
-      )),
-      const SizedBox(width: 15),
-      Expanded(child: ElevatedButton.icon(
-        onPressed: _confirmarGuardar,
-        icon: const Icon(Icons.save),
-        label: const Text("Guardar"),
-        style: ElevatedButton.styleFrom(backgroundColor: verdeVenta, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 15), elevation: 3),
-      )),
-    ]);
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PantallaVentasGuardados(),
+              ),
+            ),
+            icon: const Icon(Icons.folder_open),
+            label: const Text("Guardados"),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: rojoVenta,
+              side: BorderSide(color: rojoVenta),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+            ),
+          ),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _confirmarGuardar,
+            icon: const Icon(Icons.save),
+            label: const Text("Guardar"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: verdeVenta,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              elevation: 3,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _celdaHeader(String t) => Padding(padding: const EdgeInsets.all(10), child: Text(t, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: rojoVenta, fontSize: 12)));
+  Widget _celdaHeader(String t) => Padding(
+    padding: const EdgeInsets.all(10),
+    child: Text(
+      t,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: rojoVenta,
+        fontSize: 12,
+      ),
+    ),
+  );
 
-  Widget _inputVenta(TextEditingController ctrl, String label, IconData icono, Color color, {bool esNum = false, Function(String)? alCambiar}) {
+  Widget _inputVenta(
+    TextEditingController ctrl,
+    String label,
+    IconData icono,
+    Color color, {
+    bool esNum = false,
+    Function(String)? alCambiar,
+  }) {
     return TextField(
-      controller: ctrl, keyboardType: esNum ? TextInputType.number : TextInputType.text, textCapitalization: TextCapitalization.words,
+      controller: ctrl,
+      keyboardType: esNum ? TextInputType.number : TextInputType.text,
+      textCapitalization: TextCapitalization.words,
       textInputAction: TextInputAction.next,
-      
-      onChanged: (v) { if (alCambiar != null) alCambiar(v); _guardarDatosTemporales(); },
+
+      onChanged: (v) {
+        if (alCambiar != null) alCambiar(v);
+        _guardarDatosTemporales();
+      },
       decoration: InputDecoration(
-        labelText: label, prefixIcon: Icon(icono, color: color, size: 18),
+        labelText: label,
+        prefixIcon: Icon(icono, color: color, size: 18),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        contentPadding: const EdgeInsets.all(12), isDense: true,
+        contentPadding: const EdgeInsets.all(12),
+        isDense: true,
       ),
     );
   }

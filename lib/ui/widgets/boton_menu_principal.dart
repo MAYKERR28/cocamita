@@ -27,7 +27,7 @@ class BotonMenuPrincipal extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 25),
           decoration: BoxDecoration(
-            border: Border.all(color: color, width: 3),
+            border: Border.all(color: color, width: 4),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -37,7 +37,7 @@ class BotonMenuPrincipal extends StatelessWidget {
               const SizedBox(width: 20),
               Text(
                 titulo,
-                style: TextStyle(fontSize: 32, color: color, fontWeight: FontWeight.w400),
+                style: TextStyle(fontSize: 32, color: color, fontWeight: FontWeight.w500),
               ),
             ],
           ),
